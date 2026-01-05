@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Filter, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
+import { Search, Plus, Filter, MoreVertical, Edit, Trash2, User, Shield, CreditCard, Phone, MapPin, Calendar, BookOpen, GraduationCap, Home, Heart, X, Bus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,14 +42,17 @@ import { Autocomplete } from "@/components/ui/autocomplete";
 import { mockCountries, mockStates, mockDistricts } from "@/data/locations";
 
 export default function Students() {
-  const { students, addStudent, deleteStudent, updateStudent, restoreStudent, searchQuery: globalSearchQuery } = useData();
+  const { students, buses, addStudent, deleteStudent, updateStudent, restoreStudent, searchQuery: globalSearchQuery } = useData();
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const searchQuery = globalSearchQuery || localSearchQuery;
 
   const [classFilter, setClassFilter] = useState("all");
   const [routeFilter, setRouteFilter] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isViewStudentOpen, setIsViewStudentOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Form State
   const [newStudent, setNewStudent] = useState({
@@ -341,6 +344,160 @@ export default function Students() {
         </CardContent>
       </Card>
 
+      {/* Student Details Dialog */}
+      <Dialog open={isViewStudentOpen} onOpenChange={setIsViewStudentOpen}>
+        <DialogContent className="p-0 overflow-hidden bg-transparent border-0 shadow-none max-w-md">
+          {selectedStudent && (
+            <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl overflow-hidden">
+              <div className="absolute top-2 right-2 z-20">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/40 text-white"
+                  onClick={() => setIsViewStudentOpen(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Gradient Header */}
+              <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+                <div className="absolute -bottom-12 left-8 p-1 bg-white dark:bg-slate-900 rounded-full">
+                  <div className="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white dark:border-slate-900 shadow-xl overflow-hidden">
+                    {selectedStudent.profileImage ? (
+                      <img src={selectedStudent.profileImage} alt={selectedStudent.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-12 h-12 text-slate-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-16 px-8 pb-8">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      {selectedStudent.name}
+                      <Shield className="w-5 h-5 text-blue-500 fill-blue-500" />
+                    </h2>
+                    <p className="text-muted-foreground font-medium flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4" />
+                      {selectedStudent.class} • Roll: {selectedStudent.rollNumber || "N/A"}
+                    </p>
+                  </div>
+                  <Badge className={`px-3 py-1 ${selectedStudent.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'}`}>
+                    {selectedStudent.status}
+                  </Badge>
+                </div>
+
+                <div className="grid gap-4">
+                  {/* RFID & Route */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">RFID Card</span>
+                      <div className="flex items-center gap-2 font-medium overflow-hidden">
+                        <CreditCard className="w-4 h-4 text-primary shrink-0" />
+                        <span className="truncate">{selectedStudent.rfid}</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Route</span>
+                      <div className="flex items-center gap-2 font-medium overflow-hidden">
+                        <MapPin className="w-4 h-4 text-primary shrink-0" />
+                        <span className="truncate">{selectedStudent.route}</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Bus</span>
+                      <div className="flex items-center gap-2 font-medium overflow-hidden">
+                        <Bus className="w-4 h-4 text-primary shrink-0" />
+                        <div className="flex flex-col truncate leading-tight">
+                          <span className="truncate font-bold text-sm">
+                            {selectedStudent.assignedBus ? `Bus ${selectedStudent.assignedBus}` : 'N/A'}
+                          </span>
+                          {selectedStudent.assignedBus && buses.find(b => b.id === selectedStudent.assignedBus)?.plate && (
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              {buses.find(b => b.id === selectedStudent.assignedBus)?.plate}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Parent & Phone */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Parent Number</p>
+                          <p className="font-semibold text-sm">{selectedStudent.parent}</p>
+                          <p className="text-xs text-muted-foreground">{selectedStudent.phone}</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-8" asChild>
+                        <a href={`tel:${selectedStudent.phone}`}>
+                          <Phone className="w-3 h-3 mr-2" /> Call
+                        </a>
+                      </Button>
+                    </div>
+                    <div className="h-px bg-slate-200 dark:bg-slate-700" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                          <Phone className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Guardian Number</p>
+                          <p className="text-sm font-semibold">{selectedStudent.emergencyContact || "N/A"}</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-8" asChild>
+                        <a href={`tel:${selectedStudent.emergencyContact}`}>
+                          <Phone className="w-3 h-3 mr-2" /> Call
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Address & Personal */}
+                  <div className="grid gap-3">
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                      <Home className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground font-semibold">Address</p>
+                        <p className="text-sm">{selectedStudent.address || "No address provided"}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground font-semibold">DOB</p>
+                          <p className="text-sm">{selectedStudent.dob || "N/A"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <span className="text-lg font-bold text-red-500">
+                          {selectedStudent.bloodGroup || "N/A"}
+                        </span>
+                        <div>
+                          <p className="text-xs text-muted-foreground font-semibold">Blood Group</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Students Table */}
       <Card className="animate-fade-in">
         <CardHeader className="pb-3">
@@ -371,7 +528,17 @@ export default function Students() {
               ) : (
                 filteredStudents.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <button
+                        onClick={() => {
+                          setSelectedStudent(student);
+                          setIsViewStudentOpen(true);
+                        }}
+                        className="hover:underline text-left font-semibold text-primary"
+                      >
+                        {student.name}
+                      </button>
+                    </TableCell>
                     <TableCell>{student.class}</TableCell>
                     <TableCell>
                       <code className="text-xs bg-muted px-2 py-1 rounded">{student.rfid}</code>
@@ -389,8 +556,12 @@ export default function Students() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={student.status === "active" ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"}>
-                        {student.status}
+                      <Badge className={
+                        student.boardingStatus === "boarded"
+                          ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200 border-red-200"
+                      }>
+                        {student.boardingStatus === "boarded" ? "Boarded" : "Not Boarded"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -401,9 +572,7 @@ export default function Students() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2">
-                            <Eye className="w-4 h-4" /> View Details
-                          </DropdownMenuItem>
+
                           <DropdownMenuItem className="gap-2" onClick={() => openEditDialog(student)}>
                             <Edit className="w-4 h-4" /> Edit
                           </DropdownMenuItem>

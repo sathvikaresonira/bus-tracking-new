@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Bus, User, LogOut, MapPin, Bell } from "lucide-react";
+import { Bus, User, LogOut, MapPin, Bell, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,6 +14,7 @@ export default function DriverLayout() {
         { icon: User, label: "My Profile", path: "/driver" },
         { icon: MapPin, label: "My Route", path: "/driver/route" },
         { icon: Bell, label: "Notifications", path: "/driver/notifications" },
+        { icon: Users, label: "Caretaker", path: "/driver/caretaker" },
     ];
 
     const handleLogout = () => {

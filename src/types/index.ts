@@ -11,6 +11,14 @@ export interface Student {
     district?: string;
     country?: string;
     status: "active" | "inactive";
+    boardingStatus?: "boarded" | "not-boarded";
+    rollNumber?: string;
+    bloodGroup?: string;
+    address?: string;
+    profileImage?: string;
+    dob?: string;
+    emergencyContact?: string;
+    assignedBus?: string;
 }
 
 export interface Bus {
@@ -24,11 +32,11 @@ export interface Bus {
     currentStop?: string;
     location?: { lat: number; lng: number };
     speed?: number;
-    isHarshDriving?: boolean;
     isSOS?: boolean;
     state?: string;
     mandal?: string;
     district?: string;
+    plate?: string;
 }
 
 export interface Route {
@@ -58,6 +66,14 @@ export interface Driver {
     phone: string;
     status: "active" | "on-leave";
     assignedBus?: string;
+    joinDate?: string;
+    experience?: number;
+    rating?: number;
+    address?: string;
+    profileImage?: string;
+    workHistory?: string;
+    bloodGroup?: string;
+    emergencyContact?: string;
 }
 
 export interface Stats {
@@ -65,4 +81,20 @@ export interface Stats {
     activeBuses: number;
     todaysScans: number;
     notificationsSent: number;
+    morningBoarded: number;
+    eveningReturns: number;
+}
+
+export interface Caretaker {
+    id: string;
+    name: string;
+    phone: string;
+    status: "active" | "on-leave";
+    assignedBus?: string;
+    joinDate?: string;
+    experience?: number;
+    address?: string;
+    profileImage?: string;
+    bloodGroup?: string;
+    emergencyContact?: string;
 }

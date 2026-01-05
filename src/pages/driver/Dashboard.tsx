@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bus, MapPin, Phone, CreditCard, Shield, Star, Calendar } from "lucide-react";
+import { Bus, MapPin, Phone, CreditCard, Shield, Star, Calendar, FileText, X, Home } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export default function DriverDashboard() {
     const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function DriverDashboard() {
     // In real app, this would come from Auth Context
     const { buses } = useData();
     const myBus = buses.find(b => b.id === "101") || buses[0];
+    const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
 
     const driverDetails = {
         name: myBus?.driver || "Robert Johnson",
@@ -21,7 +24,9 @@ export default function DriverDashboard() {
         joinedDate: "Mar 15, 2021",
         rating: 4.8,
         totalTrips: 1240,
-        status: "Active"
+        status: "Active",
+        address: "123 Main St, Hyderabad",
+        bloodGroup: "O+"
     };
 
     return (
@@ -61,6 +66,15 @@ export default function DriverDashboard() {
                             <div className="flex items-center gap-2 font-semibold text-lg">
                                 <CreditCard className="w-5 h-5 text-primary" />
                                 {driverDetails.license}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 ml-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                    onClick={() => setIsLicenseModalOpen(true)}
+                                    title="View License"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                </Button>
                             </div>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
@@ -75,6 +89,19 @@ export default function DriverDashboard() {
                             <div className="flex items-center gap-2 font-semibold text-lg">
                                 <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
                                 {driverDetails.rating} / 5.0
+                            </div>
+                        </div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">Address</span>
+                            <div className="flex items-center gap-2 font-semibold text-lg">
+                                <Home className="w-5 h-5 text-primary" />
+                                {driverDetails.address}
+                            </div>
+                        </div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">Blood Group</span>
+                            <div className="flex items-center gap-2 font-semibold text-lg">
+                                {driverDetails.bloodGroup}
                             </div>
                         </div>
                     </div>
@@ -94,6 +121,10 @@ export default function DriverDashboard() {
                         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                             <span className="text-muted-foreground">Bus Number</span>
                             <span className="font-bold text-lg">{myBus?.busNumber}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                            <span className="text-muted-foreground">Registration No.</span>
+                            <span className="font-medium">{myBus?.plate || "N/A"}</span>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                             <span className="text-muted-foreground">Capacity</span>
@@ -143,6 +174,36 @@ export default function DriverDashboard() {
                     <Button className="ml-auto" onClick={() => navigate("/driver/route")}>View Schedule</Button>
                 </CardContent>
             </Card>
+
+
+            {/* License Photo Dialog */}
+            <Dialog open={isLicenseModalOpen} onOpenChange={setIsLicenseModalOpen}>
+                <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-transparent border-0 shadow-none">
+                    <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl overflow-hidden">
+                        <div className="absolute top-2 right-2 z-10">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                                onClick={() => setIsLicenseModalOpen(false)}
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <div className="p-1">
+                            <img
+                                src="/driver_license_sample.png"
+                                alt="Driver License"
+                                className="w-full h-auto rounded-md object-contain"
+                            />
+                        </div>
+                        <div className="p-4 bg-white dark:bg-slate-900">
+                            <h3 className="font-bold text-lg text-center">Driver License</h3>
+                            <p className="text-muted-foreground text-center text-sm">{driverDetails.license}</p>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

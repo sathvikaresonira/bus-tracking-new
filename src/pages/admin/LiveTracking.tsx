@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Bus, Filter, RefreshCw, Search, Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,7 @@ import { useData } from "@/context/DataContext";
 import { toast } from "sonner";
 import LiveMap from "@/components/Map";
 import { Autocomplete } from "@/components/ui/autocomplete";
-import { indianStatesAndDistricts } from "@/data/indian_states_districts";
-import { stateCoordinates, districtCoordinates } from "@/data/location_coordinates";
+import { useSearchParams } from "react-router-dom";
 
 const statusColors = {
   "on-route": "bg-success",
@@ -23,17 +22,23 @@ const statusColors = {
 
 export default function LiveTracking() {
   const { buses, routes, refreshData, searchQuery: globalSearchQuery } = useData();
+  const [searchParams] = useSearchParams();
   const [selectedBus, setSelectedBus] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
-  const [stateFilter, setStateFilter] = useState("all");
-  const [districtFilter, setDistrictFilter] = useState("all");
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const searchQuery = globalSearchQuery || localSearchQuery;
 
+  // Auto-select bus from URL query parameter
+  useEffect(() => {
+    const busId = searchParams.get("bus");
+    if (busId && buses.some(b => b.id === busId)) {
+      setSelectedBus(busId);
+      toast.success(`Showing live details for ${buses.find(b => b.id === busId)?.busNumber}`);
+    }
+  }, [searchParams, buses]);
+
   const filteredBuses = buses.filter((b) => {
     const matchesFilter = filter === "all" || b.status === filter;
-    const matchesState = stateFilter === "all" || b.state === stateFilter;
-    const matchesDistrict = districtFilter === "all" || b.district === districtFilter;
 
     // Find the route details for this bus to search stops
     const busRoute = routes.find(r => r.name === b.route);
@@ -48,45 +53,13 @@ export default function LiveTracking() {
       (b.state?.toLowerCase().includes(s) || false) ||
       (matchesStops || false);
 
-    return matchesFilter && matchesSearch && matchesState && matchesDistrict;
+    return matchesFilter && matchesSearch;
   });
 
-  const highlightLocation = useMemo(() => {
-    // 1. Check District Filter
-    if (districtFilter !== "all" && districtCoordinates[districtFilter]) {
-      return {
-        ...districtCoordinates[districtFilter],
-        name: districtFilter,
-        type: 'district' as const
-      };
-    }
-    // 2. Check State Filter
-    if (stateFilter !== "all" && stateCoordinates[stateFilter]) {
-      return {
-        ...stateCoordinates[stateFilter],
-        name: stateFilter,
-        type: 'state' as const
-      };
-    }
-    // 3. Check Search Query for specific locations
-    if (searchQuery.length > 2) {
-      const searchLower = searchQuery.toLowerCase();
 
-      // Try finding in districts
-      const districtMatch = Object.keys(districtCoordinates).find(d => d.toLowerCase() === searchLower);
-      if (districtMatch) return { ...districtCoordinates[districtMatch], name: districtMatch, type: 'district' as const };
-
-      // Try finding in states
-      const stateMatch = Object.keys(stateCoordinates).find(s => s.toLowerCase() === searchLower);
-      if (stateMatch) return { ...stateCoordinates[stateMatch], name: stateMatch, type: 'state' as const };
-    }
-    return null;
-  }, [stateFilter, districtFilter, searchQuery]);
 
   const handleRefresh = () => {
     setFilter("all");
-    setStateFilter("all");
-    setDistrictFilter("all");
     setLocalSearchQuery("");
     setSelectedBus(null);
     refreshData();
@@ -94,11 +67,6 @@ export default function LiveTracking() {
   };
 
 
-  const uniqueStates = Object.keys(indianStatesAndDistricts).sort();
-
-  const uniqueDistricts = stateFilter !== "all" && indianStatesAndDistricts[stateFilter]
-    ? indianStatesAndDistricts[stateFilter].sort()
-    : Array.from(new Set(buses.map(b => b.district).filter(Boolean))).sort();
 
 
 
@@ -125,22 +93,15 @@ export default function LiveTracking() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Map Component */}
-        <Card className="lg:col-span-3 animate-fade-in h-[600px] flex flex-col">
+        {/* Map Component - Rapido Style */}
+        <Card className="lg:col-span-3 animate-fade-in h-[700px] flex flex-col overflow-hidden border-0 shadow-2xl">
           <CardContent className="p-0 flex-1 relative z-0">
             <LiveMap
               buses={filteredBuses}
               onBusClick={setSelectedBus}
-              highlightLocation={highlightLocation}
-              noData={filteredBuses.length === 0 && (stateFilter !== "all" || districtFilter !== "all" || searchQuery !== "")}
+              noData={filteredBuses.length === 0 && searchQuery !== ""}
+              showDriverCard={true}
             />
-            {/* Integration Notice */}
-            <div className="absolute top-4 right-4 bg-card/95 backdrop-blur p-3 rounded-lg shadow-lg z-[1000]">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-xs font-medium">Live Map Active</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -173,31 +134,6 @@ export default function LiveTracking() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* State Filter */}
-              <Select value={stateFilter} onValueChange={(value) => {
-                setStateFilter(value);
-                setDistrictFilter("all"); // Reset district when state changes
-              }}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">State</SelectItem>
-                  {uniqueStates.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-
-              {/* District Filter */}
-              <Select value={districtFilter} onValueChange={setDistrictFilter}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select District" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">District</SelectItem>
-                  {uniqueDistricts.map(d => <SelectItem key={d} value={d as string}>{d}</SelectItem>)}
-                </SelectContent>
-              </Select>
 
             </div>
           </div>

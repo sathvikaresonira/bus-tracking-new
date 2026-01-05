@@ -11,6 +11,8 @@ interface BusStatusCardProps {
   passengers: number;
   capacity: number;
   currentStop?: string;
+  isSOS?: boolean;
+  onClick?: () => void;
 }
 
 const statusStyles = {
@@ -29,25 +31,39 @@ export function BusStatusCard({
   passengers,
   capacity,
   currentStop,
+  isSOS,
+  onClick,
 }: BusStatusCardProps) {
   const occupancyPercent = Math.round((passengers / capacity) * 100);
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow animate-fade-in">
+    <Card
+      className={cn(
+        "overflow-hidden hover:shadow-lg transition-all animate-fade-in",
+        onClick && "cursor-pointer hover:ring-2 hover:ring-primary/50"
+      )}
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Bus className="w-5 h-5 text-primary" />
+            <div className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10"
+            )}>
+              <Bus className={cn(
+                "w-5 h-5 text-primary"
+              )} />
             </div>
             <div>
               <h3 className="font-semibold">{busNumber}</h3>
               <p className="text-xs text-muted-foreground">{driver}</p>
             </div>
           </div>
-          <Badge className={cn("text-xs text-white", statusStyles[status].bg)}>
-            {statusStyles[status].text}
-          </Badge>
+          <div className="flex flex-col gap-1 items-end">
+            <Badge className={cn("text-xs text-white", statusStyles[status].bg)}>
+              {statusStyles[status].text}
+            </Badge>
+          </div>
         </div>
 
         <div className="space-y-3">

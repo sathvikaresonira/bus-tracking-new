@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { Home, Bell, User, Settings, Bus, Phone } from "lucide-react";
+import { Home, Bell, User, Settings, Bus, Phone, LogOut, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ParentLayout = () => {
@@ -11,6 +11,7 @@ const ParentLayout = () => {
     { icon: Bell, label: "Alerts", path: "/parent/notifications" },
     { icon: User, label: "Profile", path: "/parent/profile" },
     { icon: Phone, label: "Contact", path: "/parent/contact" },
+    { icon: Users, label: "Caretaker", path: "/parent/caretaker" },
   ];
 
   return (
@@ -28,10 +29,14 @@ const ParentLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative p-2 rounded-full hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors">
+            <NavLink to="/parent/notifications" className="relative p-2 rounded-full hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors">
               <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            </button>
+            </NavLink>
+            <NavLink to="/login" className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300" title="Log Out">
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Logout</span>
+            </NavLink>
           </div>
         </div>
       </header>

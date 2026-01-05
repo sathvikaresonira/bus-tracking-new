@@ -14,6 +14,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import LiveTracking from "@/pages/admin/LiveTracking";
 import Students from "@/pages/admin/Students";
 import Buses from "@/pages/admin/Buses";
+import Drivers from "@/pages/admin/Drivers";
 import Attendance from "@/pages/admin/Attendance";
 import Alerts from "@/pages/admin/Alerts";
 import Settings from "@/pages/admin/Settings";
@@ -24,10 +25,12 @@ import Profile from "@/pages/parent/Profile";
 import ParentSettings from "@/pages/parent/Settings";
 import NotFound from "@/pages/NotFound";
 import ParentContact from "@/pages/parent/Contact";
+import ParentCaretaker from "@/pages/parent/Caretaker";
 import DriverLayout from "@/layouts/DriverLayout";
 import DriverDashboard from "@/pages/driver/Dashboard";
 import DriverRoute from "@/pages/driver/Route";
 import DriverNotifications from "@/pages/driver/Notifications";
+import DriverCaretaker from "@/pages/driver/Caretaker";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +57,7 @@ const App = () => (
                 <Route path="tracking" element={<LiveTracking />} />
                 <Route path="students" element={<Students />} />
                 <Route path="buses" element={<Buses />} />
+                <Route path="drivers" element={<Drivers />} />
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="alerts" element={<Alerts />} />
                 <Route path="settings" element={<Settings />} />
@@ -69,6 +73,7 @@ const App = () => (
                 <Route path="track" element={<LiveTrack />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="caretaker" element={<ParentCaretaker />} />
                 <Route path="contact" element={<ParentContact />} />
                 <Route path="settings" element={<ParentSettings />} />
               </Route>
@@ -82,6 +87,7 @@ const App = () => (
                 <Route index element={<DriverDashboard />} />
                 <Route path="route" element={<DriverRoute />} />
                 <Route path="notifications" element={<DriverNotifications />} />
+                <Route path="caretaker" element={<DriverCaretaker />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

@@ -1,7 +1,9 @@
-import { Users, Bus, ScanLine, Bell, TrendingUp, Clock, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { Users, Bus, Sunrise, Sunset, Bell, TrendingUp, Clock, RefreshCw, TriangleAlert } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
 import { ActivityFeed } from "@/components/admin/ActivityFeed";
 import { BusStatusCard } from "@/components/admin/BusStatusCard";
+import { BusLiveDetails } from "@/components/admin/BusLiveDetails";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useData } from "@/context/DataContext";
 import { useNavigate } from "react-router-dom";
@@ -9,8 +11,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function Dashboard() {
-  const { stats, buses, searchQuery, refreshData } = useData();
+  const { stats, buses, routes, searchQuery, refreshData, updateBus } = useData();
   const navigate = useNavigate();
+  const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
+
+  // Get selected bus and its route
+  const selectedBus = selectedBusId ? buses.find(b => b.id === selectedBusId) : null;
+  const selectedBusRoute = selectedBus ? routes.find(r => r.name === selectedBus.route) : undefined;
 
   // Filter buses based on global search query
   const filteredBuses = buses.filter(bus =>
@@ -24,20 +31,54 @@ export default function Dashboard() {
     toast.success("Dashboard data refreshed");
   };
 
-  const hasSOS = buses.some(b => b.isSOS);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+
+  const hasDrunk = buses.some(b => b.isDrunkDriving);
+
+  // Auto-hide overlay if alerts are cleared externally
+  if (!hasDrunk && showOverlay) {
+    setShowOverlay(false);
+  }
+
+  const handleResolveAlerts = () => {
+    setShowOverlay(false);
+    toast.success("Alert Dismissed");
+  };
 
   return (
     <div className="space-y-6 relative">
-      {hasSOS && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50 overflow-hidden">
-          <div className="text-[15rem] font-black text-destructive/10 -rotate-12 select-none animate-pulse whitespace-nowrap">
-            SOS ACTIVE
+      {(hasDrunk) && showOverlay && (
+        <div className="absolute inset-0 pointer-events-auto flex items-center justify-center z-50 overflow-hidden bg-background/80 backdrop-blur-sm">
+          <div className="text-[12rem] md:text-[15rem] font-black text-destructive/10 -rotate-12 select-none animate-pulse whitespace-nowrap absolute">
+            DRUNK DRIVER
           </div>
-          <div className="fixed bottom-4 right-4 bg-destructive text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce z-50 flex items-center gap-3">
-            <Bell className="w-8 h-8" />
-            <div className="text-left">
-              <p className="font-bold text-lg">EMERGENCY DETECTED</p>
-              <p className="text-sm">Check alerts immediately</p>
+          <div className="relative bg-card border-2 border-destructive p-8 rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-300 max-w-lg w-full mx-4">
+            <button
+              onClick={() => setShowOverlay(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <span className="sr-only">Close</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+            </button>
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center animate-bounce">
+                <Bell className="w-8 h-8 text-destructive" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-destructive">CRITICAL WARNING</h2>
+                <p className="text-muted-foreground mt-2">
+                  Drunk driving behavior detected on Route B. Driver status: Unsafe.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full mt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setShowOverlay(false)}>
+                  Dismiss View
+                </Button>
+                <Button variant="destructive" className="flex-1" onClick={handleResolveAlerts}>
+                  Resolve Issue
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -47,14 +88,16 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2">
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div onClick={() => navigate("/admin/students")} className="cursor-pointer transition-transform hover:scale-[1.02]">
           <StatCard
             title="Total Students"
@@ -79,13 +122,24 @@ export default function Dashboard() {
         </div>
         <div onClick={() => navigate("/admin/attendance")} className="cursor-pointer transition-transform hover:scale-[1.02]">
           <StatCard
-            title="Today's Scans"
-            value={stats.todaysScans.toLocaleString()}
-            change="+5% from yesterday"
+            title="Morning Boarded"
+            value={stats.morningBoarded.toLocaleString()}
+            change={new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
             changeType="positive"
-            icon={ScanLine}
-            iconColor="text-success"
-            iconBgColor="bg-success/10"
+            icon={Sunrise}
+            iconColor="text-orange-500"
+            iconBgColor="bg-orange-500/10"
+          />
+        </div>
+        <div onClick={() => navigate("/admin/attendance")} className="cursor-pointer transition-transform hover:scale-[1.02]">
+          <StatCard
+            title="Evening Returns"
+            value={stats.eveningReturns.toLocaleString()}
+            change={new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+            changeType="positive"
+            icon={Sunset}
+            iconColor="text-purple-500"
+            iconBgColor="bg-purple-500/10"
           />
         </div>
         <div onClick={() => navigate("/admin/alerts")} className="cursor-pointer transition-transform hover:scale-[1.02]">
@@ -117,7 +171,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredBuses.length > 0 ? (
               filteredBuses.slice(0, 4).map((bus) => (
-                <BusStatusCard key={bus.id} {...bus} />
+                <BusStatusCard
+                  key={bus.id}
+                  {...bus}
+                  onClick={() => setSelectedBusId(selectedBusId === bus.id ? null : bus.id)}
+                />
               ))
             ) : (
               <div className="col-span-2 text-center py-10 text-muted-foreground bg-muted/30 rounded-lg">
@@ -127,9 +185,18 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Activity Feed */}
+        {/* Activity Feed or Bus Live Details */}
         <div className="lg:col-span-1">
-          <ActivityFeed />
+          {selectedBus ? (
+            <BusLiveDetails
+              bus={selectedBus}
+              route={selectedBusRoute}
+              onClose={() => setSelectedBusId(null)}
+              onRefresh={handleRefresh}
+            />
+          ) : (
+            <ActivityFeed />
+          )}
         </div>
       </div>
 

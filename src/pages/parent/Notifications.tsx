@@ -87,13 +87,21 @@ const Notifications = () => {
   ];
 
   // Filter notifications based on selection
-  const filteredNotifications = notifications.map((day) => ({
-    ...day,
-    events: day.events.filter((event) => {
-      if (selectedFilter === "all") return true;
-      return event.tripType === selectedFilter;
-    }),
-  })).filter((day) => day.events.length > 0);
+  const filteredNotifications = notifications
+    .filter((day) => {
+      // Date Filter Logic
+      if (selectedDate === "today") return day.date === "Today";
+      if (selectedDate === "week") return ["Today", "Yesterday"].includes(day.date); // Simplified week logic
+      return true; // "month" or "all" shows everything in this mock data
+    })
+    .map((day) => ({
+      ...day,
+      events: day.events.filter((event) => {
+        if (selectedFilter === "all") return true;
+        return event.tripType === selectedFilter;
+      }),
+    }))
+    .filter((day) => day.events.length > 0);
 
   return (
     <div className="space-y-4 animate-fade-in">

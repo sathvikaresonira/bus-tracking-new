@@ -6,7 +6,8 @@ import {
   ClipboardList,
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  User
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -27,6 +28,7 @@ const mainNavItems = [
   { title: "Live Tracking", url: "/admin/tracking", icon: MapPin },
   { title: "Students", url: "/admin/students", icon: Users },
   { title: "Buses & Routes", url: "/admin/buses", icon: Bus },
+  { title: "Drivers", url: "/admin/drivers", icon: User },
   { title: "Attendance", url: "/admin/attendance", icon: ClipboardList },
   { title: "Alerts", url: "/admin/alerts", icon: Bell },
 ];

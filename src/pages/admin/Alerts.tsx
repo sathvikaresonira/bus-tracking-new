@@ -67,7 +67,7 @@ export default function Alerts() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="animate-fade-in cursor-pointer hover:shadow-md transition-all" onClick={() => { setStatusFilter('active'); setTypeFilter('all'); setActiveTab("alerts"); }}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -81,19 +81,7 @@ export default function Alerts() {
             </div>
           </CardContent>
         </Card>
-        <Card className="animate-fade-in cursor-pointer hover:shadow-md transition-all" onClick={() => { setStatusFilter('resolved'); setTypeFilter('all'); setActiveTab("alerts"); }}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Resolved Today</p>
-                <p className="text-2xl font-bold">{resolvedTodayCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
         <Card className="animate-fade-in cursor-pointer hover:shadow-md transition-all" onClick={() => setActiveTab("notifications")}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">

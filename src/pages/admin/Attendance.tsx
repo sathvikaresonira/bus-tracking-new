@@ -157,8 +157,8 @@ export default function Attendance() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="boarding">Boarding</SelectItem>
-                  <SelectItem value="alighting">Alighting</SelectItem>
+                  <SelectItem value="boarding">Boarded</SelectItem>
+                  <SelectItem value="alighting">Not Boarded</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -197,10 +197,10 @@ export default function Attendance() {
                   <TableCell>
                     <Badge className={cn(
                       record.scanType === "boarding"
-                        ? "bg-success/10 text-success"
-                        : "bg-primary/10 text-primary"
+                        ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200"
+                        : "bg-red-100 text-red-800 hover:bg-red-200 border-red-200"
                     )}>
-                      {record.scanType === "boarding" ? "↑ Boarding" : "↓ Alighting"}
+                      {record.scanType === "boarding" ? "Boarded" : "Not Boarded"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{record.location}</TableCell>
