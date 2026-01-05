@@ -2,7 +2,7 @@ import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Navigation } from "lucide-react";
-import LiveMap from "@/components/Map";
+import LiveMap from "@/components/common/Map";
 
 export default function DriverRoute() {
     const { buses, routes } = useData();

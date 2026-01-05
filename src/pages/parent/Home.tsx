@@ -5,7 +5,7 @@ import QuickActionButton from "@/components/parent/QuickActionButton";
 import BoardingEventCard from "@/components/parent/BoardingEventCard";
 import { Phone, MapPin, Bell, History, Bus, Home, School } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import LiveMap from "@/components/Map";
+import LiveMap from "@/components/common/Map";
 import { useData } from "@/context/DataContext";
 
 const ParentHome = () => {

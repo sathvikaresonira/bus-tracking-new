@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+// Extracted Components
+import SOSAlertOverlay from "@/components/admin/SOSAlertOverlay";
+
 export default function Dashboard() {
   const { stats, buses, routes, searchQuery, refreshData, updateBus } = useData();
   const navigate = useNavigate();
@@ -31,8 +34,7 @@ export default function Dashboard() {
     toast.success("Dashboard data refreshed");
   };
 
-  const [showOverlay, setShowOverlay] = useState(false);
-
+  const [showOverlay, setShowOverlay] = useState(true);
 
   const hasDrunk = buses.some(b => b.isDrunkDriving);
 
@@ -43,46 +45,17 @@ export default function Dashboard() {
 
   const handleResolveAlerts = () => {
     setShowOverlay(false);
-    toast.success("Alert Dismissed");
+    toast.success("Alert Resolved");
   };
 
   return (
     <div className="space-y-6 relative">
-      {(hasDrunk) && showOverlay && (
-        <div className="absolute inset-0 pointer-events-auto flex items-center justify-center z-50 overflow-hidden bg-background/80 backdrop-blur-sm">
-          <div className="text-[12rem] md:text-[15rem] font-black text-destructive/10 -rotate-12 select-none animate-pulse whitespace-nowrap absolute">
-            DRUNK DRIVER
-          </div>
-          <div className="relative bg-card border-2 border-destructive p-8 rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-300 max-w-lg w-full mx-4">
-            <button
-              onClick={() => setShowOverlay(false)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-            >
-              <span className="sr-only">Close</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-            </button>
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center animate-bounce">
-                <Bell className="w-8 h-8 text-destructive" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-destructive">CRITICAL WARNING</h2>
-                <p className="text-muted-foreground mt-2">
-                  Drunk driving behavior detected on Route B. Driver status: Unsafe.
-                </p>
-              </div>
-              <div className="flex gap-3 w-full mt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setShowOverlay(false)}>
-                  Dismiss View
-                </Button>
-                <Button variant="destructive" className="flex-1" onClick={handleResolveAlerts}>
-                  Resolve Issue
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <SOSAlertOverlay
+        isOpen={hasDrunk && showOverlay}
+        onClose={() => setShowOverlay(false)}
+        onResolve={handleResolveAlerts}
+        message="Drunk driving behavior detected on Route B. Driver status: Unsafe."
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>

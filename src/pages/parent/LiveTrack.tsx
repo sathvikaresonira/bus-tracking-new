@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Bus, MapPin, Clock, Navigation, Phone, User, ChevronUp, ChevronDown, AlertTriangle, Shield, Gauge, Users, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useData } from "@/context/DataContext";
-import LiveMap from "@/components/Map";
+import LiveMap from "@/components/common/Map";
 
 const LiveTrack = () => {
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);

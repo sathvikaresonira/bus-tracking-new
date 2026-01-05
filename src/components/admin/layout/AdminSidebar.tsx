@@ -9,7 +9,7 @@ import {
   LogOut,
   User
 } from "lucide-react";
-import { NavLink } from "@/components/NavLink";
+import { NavLink } from "@/components/common/NavLink";
 import {
   Sidebar,
   SidebarContent,

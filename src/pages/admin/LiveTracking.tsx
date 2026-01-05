@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { useData } from "@/context/DataContext";
 import { toast } from "sonner";
-import LiveMap from "@/components/Map";
+import LiveMap from "@/components/common/Map";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { useSearchParams } from "react-router-dom";
 
