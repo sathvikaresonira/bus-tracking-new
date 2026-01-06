@@ -28,8 +28,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useData } from "@/context/DataContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -38,6 +36,8 @@ import { cn } from "@/lib/utils";
 import RouteTimeline from "@/components/admin/RouteTimeline";
 import BusDetailsDialog from "@/components/admin/BusDetailsDialog";
 import RouteCard from "@/components/admin/RouteCard";
+import AddBusDialog from "@/components/admin/buses/AddBusDialog";
+import AddRouteDialog from "@/components/admin/routes/AddRouteDialog";
 
 export default function Buses() {
   const { buses, routes, drivers, addBus, deleteBus, updateBus, restoreBus, addRoute, deleteRoute, updateRoute, restoreRoute, searchQuery: globalSearchQuery } = useData();
@@ -352,99 +352,19 @@ export default function Buses() {
         {/* Buses Tab */}
         <TabsContent value="buses" className="space-y-4">
           <div className="flex justify-end">
-            <Dialog open={isAddBusOpen} onOpenChange={setIsAddBusOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2" onClick={openAddBusDialog}>
-                  <Plus className="w-4 h-4" /> Add Bus
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editingBusId ? "Edit Bus" : "Add New Bus"}</DialogTitle>
-                  <DialogDescription>{editingBusId ? "Update bus details." : "Register a new bus to the fleet."}</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Bus Number</Label>
-                      <Input
-                        placeholder="Bus 106"
-                        value={newBus.busNumber}
-                        onChange={e => setNewBus({ ...newBus, busNumber: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Registration Number</Label>
-                      <Input
-                        placeholder="TS 09 UA 1234"
-                        value={newBus.plate}
-                        onChange={e => setNewBus({ ...newBus, plate: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Capacity</Label>
-                      <Input type="number" placeholder="40"
-                        value={newBus.capacity}
-                        onChange={e => setNewBus({ ...newBus, capacity: parseInt(e.target.value) })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Select value={newBus.status} onValueChange={(val: any) => setNewBus({ ...newBus, status: val })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="idle">Idle</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Assign Driver</Label>
-                      <Select onValueChange={(val) => setNewBus({ ...newBus, driver: val })} value={newBus.driver}>
-                        <SelectTrigger><SelectValue placeholder="Select driver" /></SelectTrigger>
-                        <SelectContent>
-                          {drivers.length > 0 ? drivers.map((d) => (
-                            <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                          )) : <SelectItem value="john">John Doe (Mock)</SelectItem>}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Assign Route</Label>
-                      <Select onValueChange={(val) => setNewBus({ ...newBus, route: val })} value={newBus.route}>
-                        <SelectTrigger><SelectValue placeholder="Select route" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Route</SelectItem>
-                          {(() => {
-                            // Generate RouteA - RouteZ
-                            const alphabetRoutes = Array.from({ length: 26 }, (_, i) => `Route${String.fromCharCode(65 + i)}`);
-                            // Merge with existing route names to preserve legacy data like "Route A"
-                            const existingNames = routes.map(r => r.name);
-                            const allOptions = Array.from(new Set([...alphabetRoutes, ...existingNames])).sort((a, b) => {
-                              // Smart sort to handle Route 10 vs Route 2 if needed, though mostly A-Z
-                              return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-                            });
-
-                            return allOptions.map((name) => (
-                              <SelectItem key={name} value={name}>{name}</SelectItem>
-                            ));
-                          })()}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddBusOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddBus}>Add Bus</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button className="gap-2" onClick={openAddBusDialog}>
+              <Plus className="w-4 h-4" /> Add Bus
+            </Button>
+            <AddBusDialog
+              open={isAddBusOpen}
+              onOpenChange={setIsAddBusOpen}
+              bus={newBus}
+              setBus={setNewBus}
+              drivers={drivers}
+              routes={routes}
+              isEditing={!!editingBusId}
+              onSave={handleAddBus}
+            />
           </div>
 
           <Card className="animate-fade-in">
@@ -514,107 +434,23 @@ export default function Buses() {
         {/* Routes Tab */}
         <TabsContent value="routes" className="space-y-4">
           <div className="flex justify-end">
-            <Dialog open={isAddRouteOpen} onOpenChange={setIsAddRouteOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2" onClick={openCreateRouteDialog}>
-                  <Plus className="w-4 h-4" /> Add Route
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editingRouteId ? "Edit Route" : "Add New Route"}</DialogTitle>
-                  <DialogDescription>{editingRouteId ? "Update route details" : "Create a new route sequence"}</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Route Name ({editingRouteId ? 'Editable' : 'Select Available'})</Label>
-                    {editingRouteId ? (
-                      <Input
-                        value={newRoute.name}
-                        onChange={(e) => setNewRoute({ ...newRoute, name: e.target.value })}
-                      />
-                    ) : (
-                      <Select
-                        value={newRoute.name}
-                        onValueChange={(val) => setNewRoute({ ...newRoute, name: val })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Route Name" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {/* Generate available alphabetical routes A-Z */}
-                          {Array.from({ length: 26 }, (_, i) => `Route${String.fromCharCode(65 + i)}`)
-                            .filter(name => !routes.some(r => r.name === name) || name === newRoute.name)
-                            .map(name => (
-                              <SelectItem key={name} value={name}>
-                                {name}
-                              </SelectItem>
-                            ))
-                          }
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
-
-                  {!editingRouteId && (
-                    <div className="space-y-2">
-                      <Label>Assign Bus</Label>
-                      <Select value={selectedBusForRoute} onValueChange={setSelectedBusForRoute}>
-                        <SelectTrigger><SelectValue placeholder="Select a bus" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Bus Assignment</SelectItem>
-                          <SelectItem value="new_bus">+ Create New Bus</SelectItem>
-                          {buses.filter(b => !b.route || b.route === 'none').map(b => (
-                            <SelectItem key={b.id} value={b.id}>{b.busNumber} ({b.plate})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {!editingRouteId && selectedBusForRoute === 'new_bus' && (
-                    <div className="border p-3 rounded-md space-y-3 bg-muted/20">
-                      <p className="text-xs font-semibold text-primary">New Bus Details</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Bus Number</Label>
-                          <Input
-                            placeholder="e.g. Bus 109"
-                            value={newBusDetails.busNumber}
-                            onChange={e => setNewBusDetails({ ...newBusDetails, busNumber: e.target.value })}
-                            className="h-8"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Plate Number</Label>
-                          <Input
-                            placeholder="TS 09..."
-                            value={newBusDetails.plate}
-                            onChange={e => setNewBusDetails({ ...newBusDetails, plate: e.target.value })}
-                            className="h-8"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Distance</Label>
-                      <Input value={newRoute.distance} onChange={e => setNewRoute({ ...newRoute, distance: e.target.value })} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Est. Time</Label>
-                      <Input value={newRoute.estimatedTime} onChange={e => setNewRoute({ ...newRoute, estimatedTime: e.target.value })} />
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddRouteOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddRoute}>{editingRouteId ? "Update Route" : "Save Route"}</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button className="gap-2" onClick={openCreateRouteDialog}>
+              <Plus className="w-4 h-4" /> Add Route
+            </Button>
+            <AddRouteDialog
+              open={isAddRouteOpen}
+              onOpenChange={setIsAddRouteOpen}
+              route={newRoute}
+              setRoute={setNewRoute}
+              isEditing={!!editingRouteId}
+              onSave={handleAddRoute}
+              existingRoutes={routes}
+              buses={buses}
+              selectedBusForRoute={selectedBusForRoute}
+              setSelectedBusForRoute={setSelectedBusForRoute}
+              newBusDetails={newBusDetails}
+              setNewBusDetails={setNewBusDetails}
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {routes.map((route) => (

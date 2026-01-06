@@ -96,6 +96,8 @@ The primary visualization tool.
 - **Advanced Filtering**: Targeted "Morning Boarded" and "Evening Returns" visual toggles in attendance logs.
 - **Responsive Dialogs**: Full adaptation of Route Live Status views for mobile devices ("Where is my Train" style).
 - **Automated Fleet Ops**: Strict alphabetical route generation (RouteA...RouteZ) and auto-creation of buses/routes during assignment.
+- **Modular Architecture**: Data management decoupled using `src/data/mockData.ts` and `src/hooks/useTrafficSimulation.ts`.
+- **Component Composition**: Complex dialogs (Add Bus, Add Route, Add Driver) extracted to `src/components` for improved code structure and readability.
 
 ---
 *Last Updated: 2026-01-05*

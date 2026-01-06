@@ -13,17 +13,12 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useData } from "@/context/DataContext";
 import { toast } from "sonner";
+import AddDriverDialog from "@/components/admin/drivers/AddDriverDialog";
+import AddCaretakerDialog from "@/components/admin/drivers/AddCaretakerDialog";
 
 export default function Drivers() {
     const {
@@ -228,72 +223,17 @@ export default function Drivers() {
                 {/* Drivers Tab */}
                 <TabsContent value="drivers" className="space-y-4">
                     <div className="flex justify-end">
-                        <Dialog open={isAddDriverOpen} onOpenChange={setIsAddDriverOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2" onClick={openAddDriverDialog}>
-                                    <Plus className="w-4 h-4" /> Add Driver
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{editingDriverId ? "Edit Driver" : "Add New Driver"}</DialogTitle>
-                                    <DialogDescription>{editingDriverId ? "Update driver details" : "Register a new driver"}</DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label>Name</Label>
-                                        <Input value={newDriver.name} onChange={e => setNewDriver({ ...newDriver, name: e.target.value })} placeholder="Driver Name" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>License</Label>
-                                            <Input value={newDriver.license} onChange={e => setNewDriver({ ...newDriver, license: e.target.value })} placeholder="License No." />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Phone</Label>
-                                            <Input value={newDriver.phone} onChange={e => setNewDriver({ ...newDriver, phone: e.target.value })} placeholder="+1 234-567-8900" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Join Date</Label>
-                                            <Input type="date" value={newDriver.joinDate} onChange={e => setNewDriver({ ...newDriver, joinDate: e.target.value })} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Experience (Years)</Label>
-                                            <Input type="number" value={newDriver.experience} onChange={e => setNewDriver({ ...newDriver, experience: parseInt(e.target.value) || 0 })} placeholder="5" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Address</Label>
-                                        <Input value={newDriver.address} onChange={e => setNewDriver({ ...newDriver, address: e.target.value })} placeholder="123 Main St, City" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Blood Group</Label>
-                                            <Input value={newDriver.bloodGroup} onChange={e => setNewDriver({ ...newDriver, bloodGroup: e.target.value })} placeholder="O+" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Emergency Contact</Label>
-                                            <Input value={newDriver.emergencyContact} onChange={e => setNewDriver({ ...newDriver, emergencyContact: e.target.value })} placeholder="+91..." />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Work History</Label>
-                                        <Textarea
-                                            value={newDriver.workHistory}
-                                            onChange={e => setNewDriver({ ...newDriver, workHistory: e.target.value })}
-                                            placeholder="Previous employers, roles, etc."
-                                            className="min-h-[80px]"
-                                        />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsAddDriverOpen(false)}>Cancel</Button>
-                                    <Button onClick={handleAddDriver}>Save Driver</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        <Button className="gap-2" onClick={openAddDriverDialog}>
+                            <Plus className="w-4 h-4" /> Add Driver
+                        </Button>
+                        <AddDriverDialog
+                            open={isAddDriverOpen}
+                            onOpenChange={setIsAddDriverOpen}
+                            driver={newDriver}
+                            setDriver={setNewDriver}
+                            isEditing={!!editingDriverId}
+                            onSave={handleAddDriver}
+                        />
                     </div>
 
                     {/* License Photo Dialog */}
@@ -469,57 +409,17 @@ export default function Drivers() {
                 {/* Caretakers Tab */}
                 <TabsContent value="caretakers" className="space-y-4">
                     <div className="flex justify-end">
-                        <Dialog open={isAddCaretakerOpen} onOpenChange={setIsAddCaretakerOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2" onClick={openAddCaretakerDialog}>
-                                    <Plus className="w-4 h-4" /> Add Caretaker
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{editingCaretakerId ? "Edit Caretaker" : "Add New Caretaker"}</DialogTitle>
-                                    <DialogDescription>{editingCaretakerId ? "Update caretaker details" : "Register a new caretaker"}</DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label>Name</Label>
-                                        <Input value={newCaretaker.name} onChange={e => setNewCaretaker({ ...newCaretaker, name: e.target.value })} placeholder="Caretaker Name" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Phone</Label>
-                                            <Input value={newCaretaker.phone} onChange={e => setNewCaretaker({ ...newCaretaker, phone: e.target.value })} placeholder="+91 98765 43210" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Experience (Years)</Label>
-                                            <Input type="number" value={newCaretaker.experience} onChange={e => setNewCaretaker({ ...newCaretaker, experience: parseInt(e.target.value) || 0 })} placeholder="3" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Join Date</Label>
-                                            <Input type="date" value={newCaretaker.joinDate} onChange={e => setNewCaretaker({ ...newCaretaker, joinDate: e.target.value })} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Blood Group</Label>
-                                            <Input value={newCaretaker.bloodGroup} onChange={e => setNewCaretaker({ ...newCaretaker, bloodGroup: e.target.value })} placeholder="O+" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Address</Label>
-                                        <Input value={newCaretaker.address} onChange={e => setNewCaretaker({ ...newCaretaker, address: e.target.value })} placeholder="123 Main St, City" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Emergency Contact</Label>
-                                        <Input value={newCaretaker.emergencyContact} onChange={e => setNewCaretaker({ ...newCaretaker, emergencyContact: e.target.value })} placeholder="+91..." />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsAddCaretakerOpen(false)}>Cancel</Button>
-                                    <Button onClick={handleAddCaretaker}>Save Caretaker</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        <Button className="gap-2" onClick={openAddCaretakerDialog}>
+                            <Plus className="w-4 h-4" /> Add Caretaker
+                        </Button>
+                        <AddCaretakerDialog
+                            open={isAddCaretakerOpen}
+                            onOpenChange={setIsAddCaretakerOpen}
+                            caretaker={newCaretaker}
+                            setCaretaker={setNewCaretaker}
+                            isEditing={!!editingCaretakerId}
+                            onSave={handleAddCaretaker}
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
