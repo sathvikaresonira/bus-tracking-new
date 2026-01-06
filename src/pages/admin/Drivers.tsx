@@ -442,6 +442,14 @@ export default function Drivers() {
                                                 </div>
                                             </div>
                                             <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                                                    <span className="text-sm font-bold text-red-600 dark:text-red-400">{driver.bloodGroup || "?"}</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Blood Group</p>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center gap-3 col-span-2">
                                                 <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
                                                     <Star className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
                                                 </div>

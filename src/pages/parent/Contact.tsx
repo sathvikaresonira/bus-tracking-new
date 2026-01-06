@@ -35,7 +35,7 @@ export default function ParentContact() {
                                 <Phone className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div>
-                                <p className="font-semibold text-emerald-900 dark:text-emerald-100">Transport Hotline</p>
+                                <p className="font-semibold text-emerald-900 dark:text-emerald-100">Call Support</p>
                                 <p className="text-sm text-emerald-700 dark:text-emerald-300">+1 (555) 000-1234</p>
                             </div>
                         </CardContent>

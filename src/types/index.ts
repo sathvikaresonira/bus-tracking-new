@@ -64,6 +64,8 @@ export interface Route {
     path?: [number, number][];
     distance?: string;
     estimatedTime?: string;
+    morningTime?: string;
+    eveningTime?: string;
 }
 
 export interface Alert {

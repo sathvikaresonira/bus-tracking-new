@@ -13,8 +13,7 @@ const ParentSettings = () => {
   });
 
   const [channels, setChannels] = useState({
-    push: true,
-    sms: true,
+    pushSms: true,
     email: false,
   });
 
@@ -87,8 +86,7 @@ const ParentSettings = () => {
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
           {[
-            { key: "push", label: "Push Notifications", icon: Smartphone, description: "In-app notifications" },
-            { key: "sms", label: "SMS Alerts", icon: MessageSquare, description: "Text messages to your phone" },
+            { key: "pushSms", label: "Push + SMS Notifications", icon: Smartphone, description: "In-app and text message alerts" },
             { key: "email", label: "Email Notifications", icon: MessageSquare, description: "Email updates" },
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between p-4">

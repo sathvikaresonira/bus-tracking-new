@@ -75,6 +75,26 @@ export default function Buses() {
     eveningTime: "15:00"
   });
 
+  const [selectedBusForRoute, setSelectedBusForRoute] = useState<string>("none");
+  const [newBusDetails, setNewBusDetails] = useState({ busNumber: "", plate: "", driver: "" });
+
+  const getNextRouteName = () => {
+    const existingNames = routes.map(r => r.name);
+    // Match "Route A", "RouteA", etc.
+    const pattern = /^Route\s?([A-Z])$/i;
+    let maxCharCode = 64; // 'A' is 65
+
+    existingNames.forEach(name => {
+      const match = name.match(pattern);
+      if (match) {
+        const charCode = match[1].toUpperCase().charCodeAt(0);
+        if (charCode > maxCharCode) maxCharCode = charCode;
+      }
+    });
+
+    return `Route${String.fromCharCode(maxCharCode + 1)}`;
+  };
+
   const getAssignedBus = (routeName: string) => {
     if (!routeName) return null;
     return [...buses].reverse().find(b => {
@@ -142,6 +162,20 @@ export default function Buses() {
     if (editingBusId) {
       // @ts-ignore
       updateBus(editingBusId, newBus);
+
+      // Check if route exists, if not add it
+      if (newBus.route && newBus.route !== 'none' && !routes.some(r => r.name === newBus.route)) {
+        addRoute({
+          name: newBus.route,
+          stops: [],
+          distance: "10km",
+          estimatedTime: "30 mins",
+          morningTime: "07:00",
+          eveningTime: "15:00"
+        });
+        toast.success(`Route ${newBus.route} automatically created`);
+      }
+
       toast.success("Bus updated");
     } else {
       // Auto-assign route to new bus
@@ -161,6 +195,20 @@ export default function Buses() {
 
       // @ts-ignore
       addBus({ ...newBus, route: assignedRoute, passengers: 0 });
+
+      // Check if route exists, if not add it
+      if (assignedRoute && assignedRoute !== 'none' && !routes.some(r => r.name === assignedRoute)) {
+        addRoute({
+          name: assignedRoute,
+          stops: [],
+          distance: "10km",
+          estimatedTime: "30 mins",
+          morningTime: "07:00",
+          eveningTime: "15:00"
+        });
+        toast.success(`Route ${assignedRoute} automatically created`);
+      }
+
       toast.success(assignedRoute
         ? `Bus added and assigned to ${assignedRoute}`
         : "Bus added");
@@ -195,6 +243,22 @@ export default function Buses() {
     setIsAddRouteOpen(true);
   };
 
+  const openCreateRouteDialog = () => {
+    setEditingRouteId(null);
+    const nextName = getNextRouteName();
+    setNewRoute({
+      name: nextName,
+      stops: [],
+      distance: "10km",
+      estimatedTime: "30 mins",
+      morningTime: "07:00",
+      eveningTime: "15:00"
+    });
+    setSelectedBusForRoute("none");
+    setNewBusDetails({ busNumber: "", plate: "", driver: "" });
+    setIsAddRouteOpen(true);
+  };
+
   const handleAddRoute = () => {
     if (!newRoute.name) return toast.error("Route Name required");
 
@@ -204,7 +268,32 @@ export default function Buses() {
       toast.success("Route updated");
     } else {
       addRoute(newRoute);
-      toast.success("Route added");
+
+      // Handle Bus Assignment Check
+      if (selectedBusForRoute === "new_bus") {
+        if (newBusDetails.busNumber) {
+          // @ts-ignore
+          addBus({
+            busNumber: newBusDetails.busNumber,
+            plate: newBusDetails.plate || "TBD",
+            driver: newBusDetails.driver || "Unassigned",
+            route: newRoute.name,
+            status: "idle",
+            capacity: 40,
+            passengers: 0
+          });
+          toast.success("Route added & new bus created");
+        }
+      } else if (selectedBusForRoute && selectedBusForRoute !== "none") {
+        const busToUpdate = buses.find(b => b.id === selectedBusForRoute);
+        if (busToUpdate) {
+          // @ts-ignore
+          updateBus(busToUpdate.id, { route: newRoute.name, status: "on-route" });
+          toast.success("Route added & bus assigned");
+        }
+      } else {
+        toast.success("Route added");
+      }
     }
     setIsAddRouteOpen(false);
     setEditingRouteId(null);
@@ -331,9 +420,20 @@ export default function Buses() {
                         <SelectTrigger><SelectValue placeholder="Select route" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">No Route</SelectItem>
-                          {routes.map((r) => (
-                            <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
-                          ))}
+                          {(() => {
+                            // Generate RouteA - RouteZ
+                            const alphabetRoutes = Array.from({ length: 26 }, (_, i) => `Route${String.fromCharCode(65 + i)}`);
+                            // Merge with existing route names to preserve legacy data like "Route A"
+                            const existingNames = routes.map(r => r.name);
+                            const allOptions = Array.from(new Set([...alphabetRoutes, ...existingNames])).sort((a, b) => {
+                              // Smart sort to handle Route 10 vs Route 2 if needed, though mostly A-Z
+                              return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+                            });
+
+                            return allOptions.map((name) => (
+                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ));
+                          })()}
                         </SelectContent>
                       </Select>
                     </div>
@@ -413,6 +513,109 @@ export default function Buses() {
 
         {/* Routes Tab */}
         <TabsContent value="routes" className="space-y-4">
+          <div className="flex justify-end">
+            <Dialog open={isAddRouteOpen} onOpenChange={setIsAddRouteOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2" onClick={openCreateRouteDialog}>
+                  <Plus className="w-4 h-4" /> Add Route
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingRouteId ? "Edit Route" : "Add New Route"}</DialogTitle>
+                  <DialogDescription>{editingRouteId ? "Update route details" : "Create a new route sequence"}</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Route Name ({editingRouteId ? 'Editable' : 'Select Available'})</Label>
+                    {editingRouteId ? (
+                      <Input
+                        value={newRoute.name}
+                        onChange={(e) => setNewRoute({ ...newRoute, name: e.target.value })}
+                      />
+                    ) : (
+                      <Select
+                        value={newRoute.name}
+                        onValueChange={(val) => setNewRoute({ ...newRoute, name: val })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Route Name" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* Generate available alphabetical routes A-Z */}
+                          {Array.from({ length: 26 }, (_, i) => `Route${String.fromCharCode(65 + i)}`)
+                            .filter(name => !routes.some(r => r.name === name) || name === newRoute.name)
+                            .map(name => (
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
+                            ))
+                          }
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {!editingRouteId && (
+                    <div className="space-y-2">
+                      <Label>Assign Bus</Label>
+                      <Select value={selectedBusForRoute} onValueChange={setSelectedBusForRoute}>
+                        <SelectTrigger><SelectValue placeholder="Select a bus" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No Bus Assignment</SelectItem>
+                          <SelectItem value="new_bus">+ Create New Bus</SelectItem>
+                          {buses.filter(b => !b.route || b.route === 'none').map(b => (
+                            <SelectItem key={b.id} value={b.id}>{b.busNumber} ({b.plate})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {!editingRouteId && selectedBusForRoute === 'new_bus' && (
+                    <div className="border p-3 rounded-md space-y-3 bg-muted/20">
+                      <p className="text-xs font-semibold text-primary">New Bus Details</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Bus Number</Label>
+                          <Input
+                            placeholder="e.g. Bus 109"
+                            value={newBusDetails.busNumber}
+                            onChange={e => setNewBusDetails({ ...newBusDetails, busNumber: e.target.value })}
+                            className="h-8"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Plate Number</Label>
+                          <Input
+                            placeholder="TS 09..."
+                            value={newBusDetails.plate}
+                            onChange={e => setNewBusDetails({ ...newBusDetails, plate: e.target.value })}
+                            className="h-8"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Distance</Label>
+                      <Input value={newRoute.distance} onChange={e => setNewRoute({ ...newRoute, distance: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Est. Time</Label>
+                      <Input value={newRoute.estimatedTime} onChange={e => setNewRoute({ ...newRoute, estimatedTime: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddRouteOpen(false)}>Cancel</Button>
+                  <Button onClick={handleAddRoute}>{editingRouteId ? "Update Route" : "Save Route"}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {routes.map((route) => (
               <RouteCard
@@ -446,7 +649,7 @@ export default function Buses() {
                             <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
                               <BusIcon className="w-4 h-4" />
                             </div>
-                            <span className="font-bold text-sm">Bus {assignedBus.busNumber}</span>
+                            <span className="font-bold text-sm">{assignedBus.busNumber}</span>
                           </div>
                           {driverObj && (
                             <div className="flex items-center gap-3 text-slate-300 ml-1">

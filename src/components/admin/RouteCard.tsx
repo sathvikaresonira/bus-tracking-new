@@ -60,7 +60,7 @@ const RouteCard = ({ route, assignedBus, onView, onEdit, onDelete }: RouteCardPr
                             <Bus className="w-4 h-4 text-primary" />
                             {assignedBus ? (
                                 <div className="flex flex-col">
-                                    <span>Bus {assignedBus.busNumber}</span>
+                                    <span>{assignedBus.busNumber}</span>
                                     <span className="text-[10px] text-muted-foreground">{assignedBus.plate}</span>
                                 </div>
                             ) : <span className="text-muted-foreground">No Bus Assigned</span>}
